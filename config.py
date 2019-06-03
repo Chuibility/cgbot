@@ -6,3 +6,8 @@ SUPERUSERS = {
 
 HOST = '0.0.0.0'
 PORT = 8080
+
+DB_ENGINE = { 
+        'sqlite' : 'sqlite:///data/db.sqlite'
+        }
+    
