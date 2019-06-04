@@ -1,5 +1,4 @@
 from nonebot import on_command, CommandSession, logger
-from nonebot.typing import *
 
 import nonebot
 

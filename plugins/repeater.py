@@ -1,6 +1,5 @@
 from nonebot import on_command, CommandSession, logger
 from nonebot import on_natural_language, NLPSession, IntentCommand
-from nonebot.typing import *
 
 import nonebot, sys
 
