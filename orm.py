@@ -16,28 +16,29 @@ class User(Base):
     UserId = Column(Integer, primary_key=True)
     Name = Column(String)  
 
-    Groups = relationship("UserInGroup")
-
 class Group(Base):
     __tablename__ = "Groups"
  
     GroupId = Column(Integer, primary_key=True)
     Name = Column(String)  
 
-    Members = relationship("UserInGroup")
-
 class UserInGroup(Base):
     __tablename__ = "UserInGroup"
+
+    ROLE_ADMIN = "admin"
+    ROLE_MEMBER = "member"
+    ROLE_SERVER = "server"
 
     Id = Column(Integer, primary_key=True)
 
     GroupId = Column(Integer, ForeignKey("Groups.GroupId"), nullable=False)
     UserId = Column(Integer, ForeignKey("Users.UserId"), nullable=False)
+    Role = Column(String, nullable=False)
     Name = Column(String, nullable=False)
-
 
 Session = sessionmaker(bind=engine)
 _ses = Session()
+
 
 # Updating Tables
 Base.metadata.create_all(engine)
@@ -68,15 +69,26 @@ def getGroupByIdOrCreate(ses: Session, Id : Integer):
 def getUserInGroupOrCreate(ses : Session, user : User, group : Group):
     created = False
     affiliation = ses.query(UserInGroup).filter( 
-        UserInGroup.UserId == user.UserId and
+        UserInGroup.UserId == user.UserId, 
         UserInGroup.GroupId == group.GroupId
     ).one_or_none()
     if not affiliation:
         nonebot.logger.debug(f"Creating new affilication {user.UserId} in {group.GroupId}")
-        affiliation = UserInGroup(UserId=user.UserId, GroupId=group.GroupId, Name="UnknownG")
+        affiliation = UserInGroup(UserId=user.UserId, GroupId=group.GroupId, \
+                                 Name="UnknownG", Role=UserInGroup.ROLE_MEMBER)
         ses.add(affiliation)
         created = True
     return affiliation, created
+
+def is_admin(role):
+    if role == ROLE_ADMIN:
+        return True
+    elif role == ROLE_SERVER:
+        return True
+    elif role == ROLE_MEMBER:
+        return False
+    else:
+        raise Exception
 
 if __name__ == "__main__" :
     # Initializes and creates the tables

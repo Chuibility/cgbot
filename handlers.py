@@ -23,6 +23,7 @@ def find_group_info(ctx : Context_T):
     try:
         user_name = ctx['sender']['nickname']
         user_name_in_group = ctx['sender']['card']
+        user_role = ctx['sender']['role']
     except KeyError:
         bot.logger.debug(ctx['sender'])
     else:
@@ -33,6 +34,15 @@ def find_group_info(ctx : Context_T):
         if user_in_group.Name != user_name_in_group:
             bot.logger.debug(f"Changging name of {user_id} in group {group_id} from {user_in_group.Name} to {user_name_in_group}")
             user_in_group.Name = user_name_in_group
+
+        expected_role = orm.UserInGroup.ROLE_MEMBER
+        if user_id == 1000000:
+            expected_role = orm.UserInGroup.ROLE_SERVER
+        elif user_role == 'owner' or user_role == 'admin':
+            expected_role = orm.UserInGroup.ROLE_ADMIN
+        if user_in_group.Role != expected_role:
+            bot.logger.debug(f"Changging role of {user_id} in group {group_id} from {user_in_group.Role} to {expected_role}")
+            user_in_group.Role = expected_role
 
     s.commit()
     return (user, group, user_in_group)
@@ -67,11 +77,11 @@ def on_GroupCommand(handler_group):
     def decor(handler):
         async def decorated(s : CommandSession):
             # Only responds to commands in a group
-            if s.ctx['type'] != "group":
+            if s.ctx['message_type'] != 'group':
                 return
             (user, group, user_in_group) = find_group_info(s.ctx)
             (_, state) = get_emph_state(group, handler_group)
-            handler(s, user, group, user_in_group, state)
+            await handler(s, user, group, user_in_group, state)
 
         return decorated
 
