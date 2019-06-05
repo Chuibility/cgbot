@@ -1,2 +1,3 @@
 #!/bin/bash
-python3 /home/tripack/bot/main.py 
+cd /home/tripack/bot
+python3 main.py 
